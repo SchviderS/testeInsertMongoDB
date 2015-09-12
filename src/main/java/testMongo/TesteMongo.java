@@ -1,4 +1,4 @@
-package testMongoInsert;
+package testMongo;
 
 import org.bson.Document;
 
@@ -6,7 +6,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
-public class Teste {
+public class TesteMongo {
 	
 	public static void main(String[] args) {
 		
