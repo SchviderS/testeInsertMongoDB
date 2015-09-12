@@ -32,16 +32,19 @@ public class Teste {
 		for(Document doc : collection.find()){
 			long tempoInicio = System.nanoTime()/1000;
 			collection.updateOne(doc,new Document("$set", new Document("outra", "coisa")));
-			System.out.println("Tempo Total: "+(System.nanoTime()/1000-tempoInicio)+" micro segundos PARA UPDATE");
+			System.out.println("Tempo Total: "+(System.nanoTime()/1000-tempoInicio)+" micro segundos PARA CADA UPDATE");
 		}
 //		
-//		for(Document doc : collection.find())
+//		for(Document doc : collection.find()){
+//			long tempoInicio = System.nanoTime()/1000;
 //			System.out.println(doc.toJson());
+//			System.out.println("Tempo Total: "+(System.nanoTime()/1000-tempoInicio)+" micro segundos PARA CADA BUSCA");
+//		}
 //		
 		
 //		long tempoInicio = System.nanoTime()/1000000;
 //		collection.drop();
-//		System.out.println("Tempo Total: "+(System.nanoTime()/1000000-tempoInicio)+" mili segundos PARA DROP");
+//		System.out.println("Tempo Total: "+(System.nanoTime()/1000000-tempoInicio)+" mili segundos PARA DROP DA COLECAO");
 	}
 	
 }
