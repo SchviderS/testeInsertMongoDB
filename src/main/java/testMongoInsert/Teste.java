@@ -16,18 +16,32 @@ public class Teste {
 		
 		MongoCollection<Document> collection = db.getCollection("testdb");
 		
-		System.out.println("Nano(ns) = 10 ^ -9; Micro(us) = 10 ^ -6; Mili(ms) = 10 ^ -3");
-		int i = 0;
-		while ( i < 200 ){
-			
+//		System.out.println("Nano(ns) = 10 ^ -9; Micro(us) = 10 ^ -6; Mili(ms) = 10 ^ -3");
+//		int i = 0;
+//		while ( i < 200 ){
+//			
+//			long tempoInicio = System.nanoTime()/1000;
+//			
+//			collection.insertOne(new Document("doc",i));
+//			
+//			System.out.println("Tempo Total: "+(System.nanoTime()/1000-tempoInicio)+" micro segundos");  
+//			
+//			i++;
+//		}
+		
+		for(Document doc : collection.find()){
 			long tempoInicio = System.nanoTime()/1000;
-			
-			collection.insertOne(new Document("doc",i));
-			
-			System.out.println("Tempo Total: "+(System.nanoTime()/1000-tempoInicio)+" micro segundos");  
-			
-			i++;
-			
+			collection.updateOne(doc,new Document("$set", new Document("outra", "coisa")));
+			System.out.println("Tempo Total: "+(System.nanoTime()/1000-tempoInicio)+" micro segundos PARA UPDATE");
 		}
+//		
+//		for(Document doc : collection.find())
+//			System.out.println(doc.toJson());
+//		
+		
+//		long tempoInicio = System.nanoTime()/1000000;
+//		collection.drop();
+//		System.out.println("Tempo Total: "+(System.nanoTime()/1000000-tempoInicio)+" mili segundos PARA DROP");
 	}
+	
 }
