@@ -23,7 +23,7 @@ public class TestePG {
 	
 	public static void main(String[] args) {
 		conectar();
-		criarTabela(tabela, col1, col2, col3, col4, col5);
+//		criarTabela(tabela, col1, col2, col3, col4, col5);
 		insert(quantidade, tabela, col1, col2, col3, col4, col5);
 		select();
 		update(quantidade, tabela, col5);
@@ -85,7 +85,7 @@ public class TestePG {
 					Statement stmt = con.createStatement();
 					
 					String sql = "INSERT INTO " + tabela + " ("+col1+","+col2+","+col3+","+col4+","+col5+") "
-							+ "VALUES ("+i+", +'Pessoa"+i+"', "+(i+20)+", 'Lugar"+i+"', "+(i*1000f)+" ) ";
+							+ "VALUES ("+i+", "+"'Pessoa"+i+"', "+(i+20)+", 'Lugar"+i+"', "+(i*1000f)+" ) ";
 
 					long tempoInicio = System.nanoTime()/1000;
 					stmt.executeUpdate(sql);
