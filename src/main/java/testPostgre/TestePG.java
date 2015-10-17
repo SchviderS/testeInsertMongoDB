@@ -1,9 +1,11 @@
 package testPostgre;
 
+import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 public class TestePG {
@@ -20,9 +22,11 @@ public class TestePG {
 	static String col3 = "CONTEUDO_INT";
 	static String col4 = "CONTEUDO_CHAR";
 	static String col5 = "CONTEUDO_REAL";
-	static int quantidade = 100;
+	
+	static int quantidade = 101;
 	static int valor1 = 40;
 	static int valor2 = 45;
+	static int escala = 1000; //Microsegundos
 	
 	public static void main(String[] args) {
 		System.out.println("------- TESTE PostgreSQL -------");
@@ -63,10 +67,10 @@ public class TestePG {
 						+ col4 + " CHAR(50), "
 						+ col5 + " REAL)";
 				
-				long tempoInicio = System.nanoTime()/1000;
+				long tempoInicio = System.nanoTime()/escala;
 				stmt.executeUpdate(sql);
-				long tempoFinal = System.nanoTime()/1000;
-				System.out.println("Tempo de CRIAÇÃO DA TABELA: "+(tempoFinal - tempoInicio)+" micro segundos");
+				long tempoFinal = System.nanoTime()/escala;
+				System.out.println("Tempo de CRIAÇÃO DA TABELA: "+(tempoFinal - tempoInicio)+" micro segundos  (ou "+toMili(tempoFinal - tempoInicio)+" milisegundos");
 				
 				stmt.close();
 				con.close();
@@ -90,10 +94,10 @@ public class TestePG {
 					String sql = "INSERT INTO " + tabela + " ("+col1+","+col2+","+col3+","+col4+","+col5+") "
 							+ "VALUES ("+i+", "+"'Pessoa"+i+"', "+(i+20)+", 'Lugar"+i+"', "+(i*1000f)+" ) ";
 
-					long tempoInicio = System.nanoTime()/1000;
+					long tempoInicio = System.nanoTime()/escala;
 					stmt.executeUpdate(sql);
 					con.commit();
-					long tempoFinal = System.nanoTime()/1000;
+					long tempoFinal = System.nanoTime()/escala;
 					
 //					System.out.println("Tempo cada INSERT: "+(tempoFinal - tempoInicio)+" micro segundos");
 					list.add(tempoFinal-tempoInicio);
@@ -111,7 +115,7 @@ public class TestePG {
 			for(int j = 1; j < list.size(); j++){
 				media = media + list.get(j);
 			}
-			System.out.println("Media INSERT: "+ media/(list.size()-1));
+			System.out.println("Media INSERT: "+ media/(list.size()-1)+ " microsegundos (ou "+toMili(media/(list.size()-1))+" milisegundos)");
 		}
 	}
 
@@ -122,11 +126,11 @@ public class TestePG {
 				 Statement stmt = con.createStatement();		 
 				 con.setAutoCommit(false);
 				 
-				 long tempoInicio = System.nanoTime()/1000;
+				 long tempoInicio = System.nanoTime()/escala;
 		         ResultSet rs = stmt.executeQuery( "SELECT * FROM " + tabela );
 		         con.commit();
-		         long tempoFinal = System.nanoTime()/1000;
-		         System.out.println("Tempo SELECT *: "+(tempoFinal - tempoInicio)+" micro segundos");
+		         long tempoFinal = System.nanoTime()/escala;
+		         System.out.println("Tempo SELECT *: "+(tempoFinal - tempoInicio)+" micro segundos (ou "+toMili(tempoFinal - tempoInicio)+" milisegundos");
 		         
 		         while ( rs.next() ) {		  
 		            int result1 = rs.getInt(col1);
@@ -162,10 +166,10 @@ public class TestePG {
 	        for(int i = 1; i < quantidade; i++){
 	        	String sql = "UPDATE " + tabela + " set " + col5 + " = "+(i*500f)+" where ID="+i;
 	        	
-	        	long tempoInicio = System.nanoTime()/1000;
+	        	long tempoInicio = System.nanoTime()/escala;
 				stmt.executeUpdate(sql);
 				con.commit();
-				long tempoFinal = System.nanoTime()/1000;
+				long tempoFinal = System.nanoTime()/escala;
 				
 //				System.out.println("Tempo cada UPDATE: "+(tempoFinal - tempoInicio)+" micro segundos");
 				list.add(tempoFinal - tempoInicio);
@@ -181,7 +185,7 @@ public class TestePG {
 		for(int j = 1; j < list.size(); j++){
 			media = media + list.get(j);
 		}
-		System.out.println("Media UPDATE: "+ media/(list.size()-1));
+		System.out.println("Media UPDATE: "+ media/(list.size()-1)+ " microsegundos (ou "+toMili(media/(list.size()-1))+" milisegundos)");
 	}
 	
 	private static void delete(int quantidade, String tabela){
@@ -195,10 +199,10 @@ public class TestePG {
 			for(int i = 1; i < quantidade; i++){
 				String sql = "DELETE from " + tabela + " WHERE " + col1 + "=" + i;
 				
-				long tempoInicio = System.nanoTime()/1000;
+				long tempoInicio = System.nanoTime()/escala;
 				stmt.executeUpdate(sql);
 				con.commit();
-				long tempoFinal = System.nanoTime()/1000;
+				long tempoFinal = System.nanoTime()/escala;
 //				System.out.println("Tempo cada DELETE: "+(tempoFinal - tempoInicio)+" micro segundos");
 				list.add(tempoFinal - tempoInicio);
 				
@@ -214,7 +218,7 @@ public class TestePG {
 		for(int j = 1; j < list.size(); j++){
 			media = media + list.get(j);
 		}
-		System.out.println("Media DELETE: "+ media/(list.size()-1));
+		System.out.println("Media DELETE: "+ media/(list.size()-1)+ " microsegundos (ou "+toMili(media/(list.size()-1))+" milisegundos)");
 	}
 	
 	private static void where(int valor1, int valor2){
@@ -224,11 +228,11 @@ public class TestePG {
 				 Statement stmt = con.createStatement();		 
 				 con.setAutoCommit(false);
 				 
-				 long tempoInicio = System.nanoTime()/1000;
+				 long tempoInicio = System.nanoTime()/escala;
 		         ResultSet rs = stmt.executeQuery( "SELECT * FROM " + tabela + " WHERE "+ col3 + " BETWEEN " + valor1 + " AND " + valor2);
 		         con.commit();
-		         long tempoFinal = System.nanoTime()/1000;
-		         System.out.println("Tempo execução SELECT COM WHERE BETWEEN: "+(tempoFinal - tempoInicio)+" micro segundos");
+		         long tempoFinal = System.nanoTime()/escala;
+		         System.out.println("Tempo execução SELECT COM WHERE BETWEEN: "+(tempoFinal - tempoInicio)+" micro segundos (ou "+toMili(tempoFinal - tempoInicio)+" milisegundos");
 		         
 		         if(rs != null){
 		        	 int count = 0;
@@ -266,11 +270,11 @@ public class TestePG {
 				 Statement stmt = con.createStatement();		 
 				 con.setAutoCommit(false);
 				 
-				 long tempoInicio = System.nanoTime()/1000;
-				 stmt.executeUpdate("DROP TABLE "+tabela);
+				 long tempoInicio = System.nanoTime()/escala;
+				 stmt.executeUpdate("DROP TABLE "+ tabela);
 				 con.commit();
-				 long tempoFinal = System.nanoTime()/1000;
-		         System.out.println("Tempo execução DROP: "+(tempoFinal - tempoInicio)+" micro segundos");
+				 long tempoFinal = System.nanoTime()/escala;
+		         System.out.println("Tempo execução DROP: "+(tempoFinal - tempoInicio)+" micro segundos  (ou "+toMili(tempoFinal - tempoInicio)+" milisegundos");
 				 
 				 stmt.close();
 		         con.close();
@@ -285,5 +289,11 @@ public class TestePG {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public static String toMili(long valor){
+		DecimalFormat df = new DecimalFormat("#.#########");
+		df.setRoundingMode(RoundingMode.CEILING);
+		return df.format(valor/1000f);
 	}
 }
