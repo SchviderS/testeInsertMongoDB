@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 public class TestePG {
 
@@ -20,14 +21,19 @@ public class TestePG {
 	static String col4 = "CONTEUDO_CHAR";
 	static String col5 = "CONTEUDO_REAL";
 	static int quantidade = 100;
+	static int valor1 = 40;
+	static int valor2 = 45;
 	
 	public static void main(String[] args) {
+		System.out.println("------- TESTE PostgreSQL -------");
 		conectar();
-//		criarTabela(tabela, col1, col2, col3, col4, col5);
+//		criarTabela(tabela, col1, col2, col3, col4, col5); //Comentar após criar a tabela, para não tentar criar novamente
 		insert(quantidade, tabela, col1, col2, col3, col4, col5);
 		select();
 		update(quantidade, tabela, col5);
+		where(valor1, valor2);
 		delete(quantidade, tabela);
+//		drop(tabela);  //Drop não funcionando via Java, só direto no banco
 	}
 
 	public static Connection conectar() {
@@ -47,9 +53,7 @@ public class TestePG {
 	public static void criarTabela(String tabela, String col1, String col2, String col3, String col4, String col5) {
 		
 		Connection con = conectar();
-
 		if (con != null) {
-
 			try {
 				Statement stmt = con.createStatement();
 				String sql = "CREATE TABLE "+ tabela +" ( "
@@ -61,7 +65,8 @@ public class TestePG {
 				
 				long tempoInicio = System.nanoTime()/1000;
 				stmt.executeUpdate(sql);
-				System.out.println("Tempo de CRIAÇÃO DA TABELA: "+(System.nanoTime()/1000-tempoInicio)+" micro segundos");
+				long tempoFinal = System.nanoTime()/1000;
+				System.out.println("Tempo de CRIAÇÃO DA TABELA: "+(tempoFinal - tempoInicio)+" micro segundos");
 				
 				stmt.close();
 				con.close();
@@ -75,12 +80,10 @@ public class TestePG {
 	
 	private static void insert(int quantidade, String tabela, String col1, String col2, String col3, String col4, String col5) {
 		Connection con = conectar();
-
+		ArrayList<Long> list = new ArrayList<Long>();
 		if (con != null) {
-
 			try {
 				con.setAutoCommit(false);
-
 				for(int i = 1; i < quantidade; i++){
 					Statement stmt = con.createStatement();
 					
@@ -89,10 +92,13 @@ public class TestePG {
 
 					long tempoInicio = System.nanoTime()/1000;
 					stmt.executeUpdate(sql);
-					System.out.println("Tempo cada INSERT: "+(System.nanoTime()/1000-tempoInicio)+" micro segundos");  
+					con.commit();
+					long tempoFinal = System.nanoTime()/1000;
+					
+//					System.out.println("Tempo cada INSERT: "+(tempoFinal - tempoInicio)+" micro segundos");
+					list.add(tempoFinal-tempoInicio);
 					
 					stmt.close();
-					con.commit();
 				}
 
 				con.close();
@@ -100,7 +106,12 @@ public class TestePG {
 				e.printStackTrace();
 				System.exit(0);
 			}
-			System.out.println("Registros criados com sucesso!");
+			
+			long media = 0;
+			for(int j = 1; j < list.size(); j++){
+				media = media + list.get(j);
+			}
+			System.out.println("Media INSERT: "+ media/(list.size()-1));
 		}
 	}
 
@@ -110,24 +121,26 @@ public class TestePG {
 			try {
 				 Statement stmt = con.createStatement();		 
 				 con.setAutoCommit(false);
+				 
+				 long tempoInicio = System.nanoTime()/1000;
 		         ResultSet rs = stmt.executeQuery( "SELECT * FROM " + tabela );
-		         while ( rs.next() ) {
-		        	 
-		        	long tempoInicio = System.nanoTime()/1000;
+		         con.commit();
+		         long tempoFinal = System.nanoTime()/1000;
+		         System.out.println("Tempo SELECT *: "+(tempoFinal - tempoInicio)+" micro segundos");
+		         
+		         while ( rs.next() ) {		  
 		            int result1 = rs.getInt(col1);
 		            String  result2 = rs.getString(col2);
 		            int result3  = rs.getInt(col3);
 		            String  result4 = rs.getString(col4);
 		            float result5 = rs.getFloat(col5);
-		            System.out.println("Tempo cada SELECT: "+(System.nanoTime()/1000-tempoInicio)+" micro segundos");
 		            
-		            System.out.println( col1 + " = " + result1 );
-		            System.out.println( col2 + " = " + result2 );
-		            System.out.println( col3 + " = " + result3 );
-		            System.out.println( col4 + " = " + result4 );
-		            System.out.println( col5 + " = " + result5 );
+//		            System.out.println( col1 + " = " + result1 );
+//		            System.out.println( col2 + " = " + result2 );
+//		            System.out.println( col3 + " = " + result3 );
+//		            System.out.println( col4 + " = " + result4 );
+//		            System.out.println( col5 + " = " + result5 );
 		           
-		            
 		         }
 		         rs.close();
 		         stmt.close();
@@ -137,11 +150,11 @@ public class TestePG {
 	    	   	System.exit(0);
 	       	}
 		}
-			
 	}
 
 	private static void update(int quantidade, String tabela, String col5){
 		Connection con = conectar();
+		ArrayList<Long> list = new ArrayList<Long>();
 		try {
 			con.setAutoCommit(false);
 	        Statement stmt = con.createStatement();
@@ -152,30 +165,43 @@ public class TestePG {
 	        	long tempoInicio = System.nanoTime()/1000;
 				stmt.executeUpdate(sql);
 				con.commit();
-				System.out.println("Tempo cada UPDATE: "+(System.nanoTime()/1000-tempoInicio)+" micro segundos");
-	            
+				long tempoFinal = System.nanoTime()/1000;
+				
+//				System.out.println("Tempo cada UPDATE: "+(tempoFinal - tempoInicio)+" micro segundos");
+				list.add(tempoFinal - tempoInicio);
 	        }
 	        stmt.close();
 	        con.close();
         } catch ( Exception e ) {
-        e.printStackTrace();
-        System.exit(0);
+        	e.printStackTrace();
+        	System.exit(0);
         }
+		
+		long media = 0;
+		for(int j = 1; j < list.size(); j++){
+			media = media + list.get(j);
+		}
+		System.out.println("Media UPDATE: "+ media/(list.size()-1));
 	}
 	
 	private static void delete(int quantidade, String tabela){
 		Connection con = conectar();
 		Statement stmt;
-		try{
+		ArrayList<Long> list = new ArrayList<Long>();
+		
+ 		try{
 			con.setAutoCommit(false);
 			stmt = con.createStatement();
 			for(int i = 1; i < quantidade; i++){
-				String sql = "DELETE from " + tabela + " where ID="+i;
+				String sql = "DELETE from " + tabela + " WHERE " + col1 + "=" + i;
 				
 				long tempoInicio = System.nanoTime()/1000;
 				stmt.executeUpdate(sql);
 				con.commit();
-				System.out.println("Tempo cada DELETE: "+(System.nanoTime()/1000-tempoInicio)+" micro segundos");
+				long tempoFinal = System.nanoTime()/1000;
+//				System.out.println("Tempo cada DELETE: "+(tempoFinal - tempoInicio)+" micro segundos");
+				list.add(tempoFinal - tempoInicio);
+				
 			}
 			stmt.close();
 			con.close(); 
@@ -183,5 +209,81 @@ public class TestePG {
 	        e.printStackTrace();
 	        System.exit(0);
       	}
+		
+		long media = 0;
+		for(int j = 1; j < list.size(); j++){
+			media = media + list.get(j);
+		}
+		System.out.println("Media DELETE: "+ media/(list.size()-1));
+	}
+	
+	private static void where(int valor1, int valor2){
+		Connection con = conectar();
+		if(con != null){
+			try {
+				 Statement stmt = con.createStatement();		 
+				 con.setAutoCommit(false);
+				 
+				 long tempoInicio = System.nanoTime()/1000;
+		         ResultSet rs = stmt.executeQuery( "SELECT * FROM " + tabela + " WHERE "+ col3 + " BETWEEN " + valor1 + " AND " + valor2);
+		         con.commit();
+		         long tempoFinal = System.nanoTime()/1000;
+		         System.out.println("Tempo execução SELECT COM WHERE BETWEEN: "+(tempoFinal - tempoInicio)+" micro segundos");
+		         
+		         if(rs != null){
+		        	 int count = 0;
+			         while ( rs.next() ) {
+			        	count ++;
+			            int result1 = rs.getInt(col1);
+			            String  result2 = rs.getString(col2);
+			            int result3  = rs.getInt(col3);
+			            String  result4 = rs.getString(col4);
+			            float result5 = rs.getFloat(col5);   
+//			            System.out.println( col1 + " = " + result1 );
+//			            System.out.println( col2 + " = " + result2 );
+//			            System.out.println( col3 + " = " + result3 );
+//			            System.out.println( col4 + " = " + result4 );
+//			            System.out.println( col5 + " = " + result5 );
+			         }
+			         System.out.println(count + " resultados");
+		         }else
+		        	 System.out.println("Resultset vazio");
+		         
+		         rs.close();
+		         stmt.close();
+		         con.close();
+			} catch ( Exception e ) {
+				e.printStackTrace();
+	    	   	System.exit(0);
+	       	}
+		}
+	}
+	
+	private static void drop(String tabela){
+		Connection con = conectar();
+		if(con != null){
+			try {
+				 Statement stmt = con.createStatement();		 
+				 con.setAutoCommit(false);
+				 
+				 long tempoInicio = System.nanoTime()/1000;
+				 stmt.executeUpdate("DROP TABLE "+tabela);
+				 con.commit();
+				 long tempoFinal = System.nanoTime()/1000;
+		         System.out.println("Tempo execução DROP: "+(tempoFinal - tempoInicio)+" micro segundos");
+				 
+				 stmt.close();
+		         con.close();
+			} catch ( Exception e ) {
+				e.printStackTrace();
+	    	   	System.exit(0);
+	       	}
+		}
+		
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 }
