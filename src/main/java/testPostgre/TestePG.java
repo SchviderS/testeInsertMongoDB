@@ -23,21 +23,59 @@ public class TestePG {
 	static String col4 = "CONTEUDO_CHAR";
 	static String col5 = "CONTEUDO_REAL";
 	
-	static int quantidade = 101;
+	static int quantidade = 1001;
 	static int valor1 = 40;
 	static int valor2 = 45;
 	static int escala = 1000; //Microsegundos
 	
+	static long totalI = 0;
+	static long totalF = 0;
+	static long totalInsert = 0;
+	static long totalSelect = 0;
+	static long totalUpdate = 0;
+	static long totalWhere = 0;
+	static long totalDelete = 0;
+	
 	public static void main(String[] args) {
 		System.out.println("------- TESTE PostgreSQL -------");
 		conectar();
+		
 //		criarTabela(tabela, col1, col2, col3, col4, col5); //Comentar após criar a tabela, para não tentar criar novamente
+		
+		totalI = System.nanoTime()/escala;
 		insert(quantidade, tabela, col1, col2, col3, col4, col5);
+		totalF = System.nanoTime()/escala;
+		totalInsert = totalF-totalI;
+		
+		totalI = System.nanoTime()/escala;
 		select();
+		totalF = System.nanoTime()/escala;
+		totalSelect = totalF-totalI;
+		
+		totalI = System.nanoTime()/escala;
 		update(quantidade, tabela, col5);
+		totalF = System.nanoTime()/escala;
+		totalUpdate = totalF-totalI;
+		
+		totalI = System.nanoTime()/escala;
 		where(valor1, valor2);
+		totalF = System.nanoTime()/escala;
+		totalWhere = totalF-totalI;
+		
+		totalI = System.nanoTime()/escala;
 		delete(quantidade, tabela);
+		totalF = System.nanoTime()/escala;
+		totalDelete = totalF-totalI;
+		
 //		drop(tabela);  //Drop não funcionando via Java, só direto no banco
+		
+		
+		System.out.println("\n------- Tempos Totais -------");
+		System.out.println("Total Insert: " + toMili(totalInsert) + " ms");
+		System.out.println("Total Select: " + toMili(totalSelect) + " ms");
+		System.out.println("Total Update: " + toMili(totalUpdate) + " ms");
+		System.out.println("Total Where: " + toMili(totalWhere) + " ms");
+		System.out.println("Total Delete: " + toMili(totalDelete) + " ms");
 	}
 
 	public static Connection conectar() {
@@ -70,7 +108,7 @@ public class TestePG {
 				long tempoInicio = System.nanoTime()/escala;
 				stmt.executeUpdate(sql);
 				long tempoFinal = System.nanoTime()/escala;
-				System.out.println("Tempo de CRIAÇÃO DA TABELA: "+(tempoFinal - tempoInicio)+" micro segundos  (ou "+toMili(tempoFinal - tempoInicio)+" milisegundos");
+				System.out.println("Tempo de CRIAÇÃO DA TABELA: "+(tempoFinal - tempoInicio)+" micro segundos  (ou "+toMili(tempoFinal - tempoInicio)+" milisegundos)");
 				
 				stmt.close();
 				con.close();
@@ -130,7 +168,7 @@ public class TestePG {
 		         ResultSet rs = stmt.executeQuery( "SELECT * FROM " + tabela );
 		         con.commit();
 		         long tempoFinal = System.nanoTime()/escala;
-		         System.out.println("Tempo SELECT *: "+(tempoFinal - tempoInicio)+" micro segundos (ou "+toMili(tempoFinal - tempoInicio)+" milisegundos");
+		         System.out.println("Tempo SELECT *: "+(tempoFinal - tempoInicio)+" micro segundos (ou "+toMili(tempoFinal - tempoInicio)+" milisegundos)");
 		         
 		         while ( rs.next() ) {		  
 		            int result1 = rs.getInt(col1);
@@ -232,7 +270,7 @@ public class TestePG {
 		         ResultSet rs = stmt.executeQuery( "SELECT * FROM " + tabela + " WHERE "+ col3 + " BETWEEN " + valor1 + " AND " + valor2);
 		         con.commit();
 		         long tempoFinal = System.nanoTime()/escala;
-		         System.out.println("Tempo execução SELECT COM WHERE BETWEEN: "+(tempoFinal - tempoInicio)+" micro segundos (ou "+toMili(tempoFinal - tempoInicio)+" milisegundos");
+		         System.out.println("Tempo execução SELECT COM WHERE BETWEEN: "+(tempoFinal - tempoInicio)+" micro segundos (ou "+toMili(tempoFinal - tempoInicio)+" milisegundos)");
 		         
 		         if(rs != null){
 		        	 int count = 0;
@@ -274,7 +312,7 @@ public class TestePG {
 				 stmt.executeUpdate("DROP TABLE "+ tabela);
 				 con.commit();
 				 long tempoFinal = System.nanoTime()/escala;
-		         System.out.println("Tempo execução DROP: "+(tempoFinal - tempoInicio)+" micro segundos  (ou "+toMili(tempoFinal - tempoInicio)+" milisegundos");
+		         System.out.println("Tempo execução DROP: "+(tempoFinal - tempoInicio)+" micro segundos  (ou "+toMili(tempoFinal - tempoInicio)+" milisegundos)");
 				 
 				 stmt.close();
 		         con.close();

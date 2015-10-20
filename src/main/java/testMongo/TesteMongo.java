@@ -19,18 +19,52 @@ public class TesteMongo {
 	static MongoDatabase db = mongo.getDatabase("testdb");
 	static MongoCollection<Document> collection = db.getCollection("testdb");
 	
-	static int qtd = 101;
+	static int qtd = 1001;
 	static int valor1 = 3;
 	static int valor2 = 10;
-	static int escala = 1000;
+	static int escala = 1000; //Microsegundos
+	
+	static long totalI = 0;
+	static long totalF = 0;
+	static long totalInsert = 0;
+	static long totalSelect = 0;
+	static long totalUpdate = 0;
+	static long totalWhere = 0;
+	static long totalDelete = 0;
 	
 	public static void main(String[] args) {
 		System.out.println("------- TESTE MongoDB -------");
+		
+		totalI = System.nanoTime()/escala;
 		insert(qtd);
+		totalF = System.nanoTime()/escala;
+		totalInsert = totalF-totalI;
+		
+		totalI = System.nanoTime()/escala;
 		select();
+		totalF = System.nanoTime()/escala;
+		totalSelect = totalF-totalI;
+		
+		totalI = System.nanoTime()/escala;
 		update();
+		totalF = System.nanoTime()/escala;
+		totalUpdate = totalF-totalI;
+		
+		totalI = System.nanoTime()/escala;
 		where(valor1, valor2);
+		totalF = System.nanoTime()/escala;
+		totalWhere = totalF-totalI;
+		
+		totalI = System.nanoTime()/escala;
 		delete();
+		totalF = System.nanoTime()/escala;
+		totalDelete = totalF-totalI;
+		System.out.println("\n------- Tempos Totais -------");
+		System.out.println("Total Insert: " + toMili(totalInsert) + " ms");
+		System.out.println("Total Select: " + toMili(totalSelect) + " ms");
+		System.out.println("Total Update: " + toMili(totalUpdate) + " ms");
+		System.out.println("Total Where: " + toMili(totalWhere) + " ms");
+		System.out.println("Total Delete: " + toMili(totalDelete) + " ms");
 //		drop();
 	}		
 	
