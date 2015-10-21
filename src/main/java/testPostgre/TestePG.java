@@ -20,12 +20,12 @@ public class TestePG {
 	static String col1 = "ID";
 	static String col2 = "CONTEUDO_TEXT";
 	static String col3 = "CONTEUDO_INT";
-	static String col4 = "CONTEUDO_CHAR";
-	static String col5 = "CONTEUDO_REAL";
+//	static String col4 = "CONTEUDO_CHAR";
+//	static String col5 = "CONTEUDO_REAL";
 	
-	static int quantidade = 1001;
+	static int quantidade = 10000001;
 	static int valor1 = 40;
-	static int valor2 = 45;
+	static int valor2 = 65;
 	static int escala = 1000; //Microsegundos
 	
 	static long totalI = 0;
@@ -42,8 +42,11 @@ public class TestePG {
 		
 //		criarTabela(tabela, col1, col2, col3, col4, col5); //Comentar após criar a tabela, para não tentar criar novamente
 		
+//		criarTabela(tabela, col1, col2, col3);
+		
 		totalI = System.nanoTime()/escala;
-		insert(quantidade, tabela, col1, col2, col3, col4, col5);
+//		insert(quantidade, tabela, col1, col2, col3, col4, col5);
+		insert(quantidade, tabela, col1, col2, col3);
 		totalF = System.nanoTime()/escala;
 		totalInsert = totalF-totalI;
 		
@@ -53,7 +56,8 @@ public class TestePG {
 		totalSelect = totalF-totalI;
 		
 		totalI = System.nanoTime()/escala;
-		update(quantidade, tabela, col5);
+//		update(quantidade, tabela, col5);
+		update3(quantidade, tabela, col3);
 		totalF = System.nanoTime()/escala;
 		totalUpdate = totalF-totalI;
 		
@@ -76,6 +80,100 @@ public class TestePG {
 		System.out.println("Total Update: " + toMili(totalUpdate) + " ms");
 		System.out.println("Total Where: " + toMili(totalWhere) + " ms");
 		System.out.println("Total Delete: " + toMili(totalDelete) + " ms");
+	}
+
+	private static void criarTabela(String tabela, String col1, String col2, String col3) {
+		Connection con = conectar();
+		if (con != null) {
+			try {
+				Statement stmt = con.createStatement();
+				String sql = "CREATE TABLE "+ tabela +" ( "
+						+ col1 + " INT PRIMARY KEY NOT NULL,"
+						+ col2 + " TEXT NOT NULL, "
+						+ col3 + " INT  NOT NULL) ";
+				long tempoInicio = System.nanoTime()/escala;
+				stmt.executeUpdate(sql);
+				long tempoFinal = System.nanoTime()/escala;
+				System.out.println("Tempo de CRIAÇÃO DA TABELA: "+(tempoFinal - tempoInicio)+" micro segundos  (ou "+toMili(tempoFinal - tempoInicio)+" milisegundos)");
+				
+				stmt.close();
+				con.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+				System.exit(0);
+			}
+			System.out.println("Tabela "+ tabela +" criada com sucesso!");
+		}
+		
+	}
+	
+	private static void insert(int quantidade, String tabela, String col1, String col2, String col3) {
+		Connection con = conectar();
+		ArrayList<Long> list = new ArrayList<Long>();
+		if (con != null) {
+			try {
+				con.setAutoCommit(false);
+				for(int i = 1; i < quantidade; i++){
+					Statement stmt = con.createStatement();
+					
+					String sql = "INSERT INTO " + tabela + " ("+col1+","+col2+","+col3+") "
+							+ "VALUES ("+i+", "+"'Pessoa"+i+"', "+(i+20)+") ";
+
+					long tempoInicio = System.nanoTime()/escala;
+					stmt.executeUpdate(sql);
+					con.commit();
+					long tempoFinal = System.nanoTime()/escala;
+					
+//					System.out.println("Tempo cada INSERT: "+(tempoFinal - tempoInicio)+" micro segundos");
+					list.add(tempoFinal-tempoInicio);
+					
+					stmt.close();
+				}
+
+				con.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+				System.exit(0);
+			}
+			
+			long media = 0;
+			for(int j = 1; j < list.size(); j++){
+				media = media + list.get(j);
+			}
+			System.out.println("Media INSERT: "+ media/(list.size()-1)+ " microsegundos (ou "+toMili(media/(list.size()-1))+" milisegundos)");
+		}
+	}
+
+	private static void update3(int quantidade, String tabela, String col3){
+		Connection con = conectar();
+		ArrayList<Long> list = new ArrayList<Long>();
+		try {
+			con.setAutoCommit(false);
+	        Statement stmt = con.createStatement();
+	        
+	        for(int i = 1; i < quantidade; i++){
+	        	String sql = "UPDATE " + tabela + " set " + col3 + " = "+(i*5)+" where ID="+i;
+	        	
+	        	long tempoInicio = System.nanoTime()/escala;
+				stmt.executeUpdate(sql);
+				con.commit();
+				long tempoFinal = System.nanoTime()/escala;
+				
+//				System.out.println("Tempo cada UPDATE: "+(tempoFinal - tempoInicio)+" micro segundos");
+				list.add(tempoFinal - tempoInicio);
+	        }
+	        stmt.close();
+	        con.close();
+        } catch ( Exception e ) {
+        	e.printStackTrace();
+        	System.exit(0);
+        }
+		
+		long media = 0;
+		for(int j = 1; j < list.size(); j++){
+			media = media + list.get(j);
+		}
+		System.out.println("Media UPDATE: "+ media/(list.size()-1)+ " microsegundos (ou "+toMili(media/(list.size()-1))+" milisegundos)");
 	}
 
 	public static Connection conectar() {
@@ -174,8 +272,8 @@ public class TestePG {
 		            int result1 = rs.getInt(col1);
 		            String  result2 = rs.getString(col2);
 		            int result3  = rs.getInt(col3);
-		            String  result4 = rs.getString(col4);
-		            float result5 = rs.getFloat(col5);
+//		            String  result4 = rs.getString(col4);
+//		            float result5 = rs.getFloat(col5);
 		            
 //		            System.out.println( col1 + " = " + result1 );
 //		            System.out.println( col2 + " = " + result2 );
@@ -279,8 +377,8 @@ public class TestePG {
 			            int result1 = rs.getInt(col1);
 			            String  result2 = rs.getString(col2);
 			            int result3  = rs.getInt(col3);
-			            String  result4 = rs.getString(col4);
-			            float result5 = rs.getFloat(col5);   
+//			            String  result4 = rs.getString(col4);
+//			            float result5 = rs.getFloat(col5);   
 //			            System.out.println( col1 + " = " + result1 );
 //			            System.out.println( col2 + " = " + result2 );
 //			            System.out.println( col3 + " = " + result3 );
